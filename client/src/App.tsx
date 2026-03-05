@@ -5,31 +5,52 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+import MediaGallery from "./pages/MediaGallery";
+import PhotoAlbum from "./pages/PhotoAlbum";
+import { MotherTongueDayPage, CurriculumPlanPage, SelfMadeMaterialsPage } from "./pages/PlansPage";
+import {
+  TeacherCertificationPage,
+  CommunityResourcesPage,
+  SpecialCurriculumPage,
+  RelatedWebsitesPage,
+  FeedbackPage,
+} from "./pages/StaticPages";
+import AdminDashboard from "./pages/AdminDashboard";
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
+      <Route path="/" component={Home} />
+      {/* 01 */}
+      <Route path="/curriculum-plan" component={CurriculumPlanPage} />
+      {/* 02 */}
+      <Route path="/mother-tongue-day" component={MotherTongueDayPage} />
+      {/* 03 */}
+      <Route path="/teacher-certification" component={TeacherCertificationPage} />
+      {/* 04 */}
+      <Route path="/community-resources" component={CommunityResourcesPage} />
+      {/* 05 */}
+      <Route path="/self-made-materials" component={SelfMadeMaterialsPage} />
+      {/* 06 */}
+      <Route path="/special-curriculum" component={SpecialCurriculumPage} />
+      {/* 07 */}
+      <Route path="/media-gallery" component={MediaGallery} />
+      {/* 08 */}
+      <Route path="/related-websites" component={RelatedWebsitesPage} />
+      {/* 09 */}
+      <Route path="/feedback" component={FeedbackPage} />
+      {/* Admin */}
+      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
+      <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
           <Router />
