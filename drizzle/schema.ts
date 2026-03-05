@@ -125,3 +125,17 @@ export const bannerSlides = mysqlTable("banner_slides", {
 
 export type BannerSlide = typeof bannerSlides.$inferSelect;
 export type InsertBannerSlide = typeof bannerSlides.$inferInsert;
+
+// ── Page Contents ─────────────────────────────────────────────────────────────
+export const pageContents = mysqlTable("page_contents", {
+  id: int("id").autoincrement().primaryKey(),
+  pageKey: varchar("pageKey", { length: 100 }).notNull().unique(),
+  pageTitle: varchar("pageTitle", { length: 255 }).notNull(),
+  content: text("content"),
+  isActive: boolean("isActive").notNull().default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type PageContent = typeof pageContents.$inferSelect;
+export type InsertPageContent = typeof pageContents.$inferInsert;

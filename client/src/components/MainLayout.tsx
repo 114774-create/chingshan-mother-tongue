@@ -27,7 +27,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
     <div className="min-h-screen flex flex-col" style={{ background: "var(--background)" }}>
       {/* Top Header */}
       <header className="sticky top-0 z-40 flex-shrink-0"
-        style={{ background: "linear-gradient(135deg, oklch(0.22 0.05 200), oklch(0.18 0.03 200))", borderBottom: "1px solid oklch(0.30 0.05 200)" }}>
+        style={{ background: "linear-gradient(135deg, oklch(0.50 0.15 180), oklch(0.45 0.12 180))", borderBottom: "1px solid oklch(0.60 0.12 180)" }}>
         <div className="flex items-center h-14 px-4 gap-3">
           {/* Mobile menu toggle */}
           <button
@@ -42,7 +42,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <Link href="/">
             <div className="flex items-center gap-2.5 cursor-pointer">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: "linear-gradient(135deg, oklch(0.65 0.12 163), oklch(0.55 0.10 163))" }}>
+                style={{ background: "linear-gradient(135deg, oklch(0.70 0.18 50), oklch(0.65 0.16 45))" }}>
                 <span className="text-sm font-bold text-white font-serif">青</span>
               </div>
               <div className="hidden sm:block">
@@ -57,9 +57,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
           {/* Admin Link */}
           <Link href="/admin">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
-              style={{ color: "oklch(0.85 0.06 163)", background: "oklch(0.65 0.12 163 / 0.15)" }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "oklch(0.65 0.12 163 / 0.25)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "oklch(0.65 0.12 163 / 0.15)")}>
+              style={{ color: "oklch(0.95 0.02 50)", background: "oklch(0.70 0.18 50 / 0.15)" }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "oklch(0.70 0.18 50 / 0.25)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "oklch(0.70 0.18 50 / 0.15)")}>
               <Settings className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">管理後台</span>
             </div>
@@ -77,20 +77,20 @@ export default function MainLayout({ children }: MainLayoutProps) {
           `}
           style={{
             width: "260px",
-            background: "linear-gradient(180deg, oklch(0.20 0.04 200) 0%, oklch(0.16 0.03 200) 100%)",
-            borderRight: "1px solid oklch(0.28 0.04 200)",
+            background: "linear-gradient(180deg, oklch(0.35 0.10 180) 0%, oklch(0.30 0.08 180) 100%)",
+            borderRight: "1px solid oklch(0.50 0.10 180)",
           }}
         >
           {/* School name in sidebar */}
-          <div className="px-4 py-4 border-b" style={{ borderColor: "oklch(0.28 0.04 200)" }}>
+          <div className="px-4 py-4 border-b" style={{ borderColor: "oklch(0.50 0.10 180)" }}>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                style={{ background: "oklch(0.65 0.12 163 / 0.25)" }}>
-                <span className="text-sm font-bold font-serif" style={{ color: "oklch(0.75 0.10 163)" }}>青</span>
+                style={{ background: "oklch(0.70 0.18 50 / 0.25)" }}>
+                <span className="text-sm font-bold font-serif" style={{ color: "oklch(0.85 0.16 50)" }}>青</span>
               </div>
               <div>
-                <p className="text-xs font-bold font-serif" style={{ color: "oklch(0.85 0.04 160)" }}>青山國小母語網站</p>
-                <p className="text-xs opacity-50" style={{ color: "oklch(0.70 0.02 160)" }}>本土語教育資源中心</p>
+                <p className="text-xs font-bold font-serif" style={{ color: "oklch(0.95 0.02 200)" }}>青山國小母語網站</p>
+                <p className="text-xs opacity-70" style={{ color: "oklch(0.85 0.02 200)" }}>本土語教育資源中心</p>
               </div>
             </div>
           </div>
@@ -106,9 +106,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
                   <div
                     className="flex items-start gap-2.5 px-3 py-2.5 rounded-lg mb-0.5 cursor-pointer transition-all duration-200 group"
                     style={isActive
-                      ? { background: "oklch(0.65 0.12 163 / 0.20)", borderLeft: "3px solid oklch(0.65 0.12 163)" }
+                      ? { background: "oklch(0.70 0.18 50 / 0.20)", borderLeft: "3px solid oklch(0.70 0.18 50)" }
                       : { borderLeft: "3px solid transparent" }}
-                    onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "oklch(0.65 0.12 163 / 0.08)"; }}
+                    onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "oklch(0.70 0.18 50 / 0.08)"; }}
                     onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
                     onClick={() => setMobileOpen(false)}
                   >
@@ -116,21 +116,21 @@ export default function MainLayout({ children }: MainLayoutProps) {
                     {item.number ? (
                       <div className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center mt-0.5"
                         style={{
-                          background: isActive ? "oklch(0.65 0.12 163 / 0.30)" : "oklch(0.65 0.12 163 / 0.10)",
-                          color: isActive ? "oklch(0.75 0.10 163)" : "oklch(0.60 0.08 163)",
+                          background: isActive ? "oklch(0.70 0.18 50 / 0.30)" : "oklch(0.70 0.18 50 / 0.10)",
+                          color: isActive ? "oklch(0.85 0.16 50)" : "oklch(0.75 0.12 50)",
                         }}>
                         <span className="text-xs font-bold leading-none">{item.number}</span>
                       </div>
                     ) : (
                       <div className="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center mt-0.5"
-                        style={{ background: isActive ? "oklch(0.65 0.12 163 / 0.30)" : "transparent" }}>
-                        <Icon className="w-3.5 h-3.5" style={{ color: isActive ? "oklch(0.75 0.10 163)" : "oklch(0.55 0.04 160)" }} />
+                        style={{ background: isActive ? "oklch(0.70 0.18 50 / 0.30)" : "transparent" }}>
+                        <Icon className="w-3.5 h-3.5" style={{ color: isActive ? "oklch(0.85 0.16 50)" : "oklch(0.80 0.05 200)" }} />
                       </div>
                     )}
                     <span
                       className="text-xs leading-snug"
                       style={{
-                        color: isActive ? "oklch(0.85 0.06 163)" : "oklch(0.70 0.02 160)",
+                        color: isActive ? "oklch(0.95 0.02 50)" : "oklch(0.85 0.02 200)",
                         fontWeight: isActive ? "600" : "400",
                       }}
                     >
@@ -143,8 +143,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 mt-auto border-t" style={{ borderColor: "oklch(0.28 0.04 200)" }}>
-            <p className="text-xs text-center opacity-40" style={{ color: "oklch(0.70 0.02 160)" }}>
+          <div className="p-4 mt-auto border-t" style={{ borderColor: "oklch(0.50 0.10 180)" }}>
+            <p className="text-xs text-center opacity-50" style={{ color: "oklch(0.85 0.02 200)" }}>
               © 青山國小 版權所有
             </p>
           </div>
