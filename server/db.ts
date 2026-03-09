@@ -5,6 +5,7 @@ import {
   announcements,
   bannerSlides,
   feedbacks,
+  pageContents,
   photos,
   plans,
   users,
@@ -304,11 +305,95 @@ export async function deleteFeedback(id: number) {
   await db.delete(feedbacks).where(eq(feedbacks.id, id));
 }
 
+// ── Page Contents ───────────────────────────────────────────────────────────────
+export async function getPageContent(pageKey: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const result = await db.select().from(pageContents).where(eq(pageContents.pageKey, pageKey)).limit(1);
+  return result.length > 0 ? result[0] : null;
+}
+
+export async function getAllPageContents() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(pageContents).orderBy(pageContents.pageKey);
+}
+
+export async function createPageContent(data: {
+  pageKey: string;
+  pageTitle: string;
+  content?: string;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(pageContents).values({ ...data, isActive: true });
+}
+
+export async function updatePageContent(pageKey: string, data: Partial<{
+  pageTitle: string;
+  content: string;
+  isActive: boolean;
+}>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(pageContents).set(data).where(eq(pageContents.pageKey, pageKey));
+}
+
+export async function deletePageContent(pageKey: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(pageContents).where(eq(pageContents.pageKey, pageKey));
+}
+
 // ── Banner Slides ─────────────────────────────────────────────────────────────
 export async function getActiveBannerSlides() {
   const db = await getDb();
   if (!db) return [];
   return db.select().from(bannerSlides).where(eq(bannerSlides.isActive, true)).orderBy(bannerSlides.sortOrder);
+}
+
+export async function getAllBannerSlides() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(bannerSlides).orderBy(bannerSlides.sortOrder);
+}
+
+export async function createBannerSlide(data: {
+  title: string;
+  subtitle?: string;
+  imageUrl: string;
+  imageKey?: string;
+  sortOrder?: number;
+}) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.insert(bannerSlides).values({ ...data, isActive: true });
+}
+
+export async function updateBannerSlide(id: number, data: Partial<{
+  title: string;
+  subtitle: string;
+  imageUrl: string;
+  sortOrder: number;
+  isActive: boolean;
+}>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.update(bannerSlides).set(data).where(eq(bannerSlides.id, id));
+}
+
+export async function deleteBannerSlide(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  await db.delete(bannerSlides).where(eq(bannerSlides.id, id));
+}
+
+export async function reorderBannerSlides(slides: Array<{ id: number; sortOrder: number }>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  for (const slide of slides) {
+    await db.update(bannerSlides).set({ sortOrder: slide.sortOrder }).where(eq(bannerSlides.id, slide.id));
+  }
 }
 
 // ── Dashboard Stats ───────────────────────────────────────────────────────────

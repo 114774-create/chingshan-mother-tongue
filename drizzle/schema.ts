@@ -7,6 +7,7 @@ import {
   timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
+import { eq } from "drizzle-orm";
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 export const users = mysqlTable("users", {

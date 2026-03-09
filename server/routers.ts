@@ -8,11 +8,13 @@ import { storagePut } from "./storage";
 import {
   createAnnouncement,
   createFeedback,
+  createPageContent,
   createPhoto,
   createPlan,
   createVideo,
   deleteAnnouncement,
   deleteFeedback,
+  deletePageContent,
   deletePhoto,
   deletePlan,
   deleteVideo,
@@ -23,14 +25,17 @@ import {
   getActiveVideos,
   getAllAnnouncements,
   getAllFeedbacks,
+  getAllPageContents,
   getAllPhotos,
   getAllPlans,
   getAllVideos,
   getApprovedFeedbacks,
   getDashboardStats,
+  getPageContent,
   getPhotoAlbums,
   updateAnnouncement,
   updateFeedback,
+  updatePageContent,
   updatePhoto,
   updatePlan,
   updateVideo,
@@ -48,45 +53,41 @@ const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
 const uploadRouter = router({
   uploadBase64: adminProcedure
     .input(z.object({
-      base64: z.string(),
+      fileName: z.string(),
+      base64Data: z.string(),
       contentType: z.string(),
-      folder: z.string().default("uploads"),
-      filename: z.string(),
     }))
     .mutation(async ({ input }) => {
-      const buffer = Buffer.from(input.base64, "base64");
-      const ext = input.filename.split(".").pop() ?? "jpg";
-      const key = `${input.folder}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { url } = await storagePut(key, buffer, input.contentType);
-      return { url, key };
+      const buffer = Buffer.from(input.base64Data, "base64");
+      const fileKey = `uploads/${Date.now()}-${input.fileName}`;
+      const result = await storagePut(fileKey, buffer, input.contentType);
+      return result;
     }),
 });
 
 // ── Videos Router ─────────────────────────────────────────────────────────────
 const videosRouter = router({
   list: publicProcedure.query(() => getActiveVideos()),
-  adminList: adminProcedure.query(() => getAllVideos()),
+  listAll: adminProcedure.query(() => getAllVideos()),
   create: adminProcedure
     .input(z.object({
-      title: z.string().min(1),
+      title: z.string(),
       description: z.string().optional(),
-      videoUrl: z.string().url(),
+      videoUrl: z.string(),
       thumbnailUrl: z.string().optional(),
       language: z.string().default("閩南語"),
       category: z.string().default("一般"),
-      sortOrder: z.number().default(0),
     }))
     .mutation(({ input }) => createVideo(input)),
   update: adminProcedure
     .input(z.object({
       id: z.number(),
-      title: z.string().min(1).optional(),
+      title: z.string().optional(),
       description: z.string().optional(),
-      videoUrl: z.string().url().optional(),
+      videoUrl: z.string().optional(),
       thumbnailUrl: z.string().optional(),
       language: z.string().optional(),
       category: z.string().optional(),
-      sortOrder: z.number().optional(),
       isActive: z.boolean().optional(),
     }))
     .mutation(({ input }) => {
@@ -101,17 +102,15 @@ const videosRouter = router({
 // ── Photos Router ─────────────────────────────────────────────────────────────
 const photosRouter = router({
   list: publicProcedure.query(() => getActivePhotos()),
-  adminList: adminProcedure.query(() => getAllPhotos()),
+  listAll: adminProcedure.query(() => getAllPhotos()),
   albums: publicProcedure.query(() => getPhotoAlbums()),
   create: adminProcedure
     .input(z.object({
-      title: z.string().min(1),
+      title: z.string(),
       description: z.string().optional(),
-      imageUrl: z.string().url(),
-      imageKey: z.string().optional(),
-      albumName: z.string().default("母語日活動"),
-      year: z.string().default("2024"),
-      sortOrder: z.number().default(0),
+      imageUrl: z.string(),
+      imageKey: z.string(),
+      album: z.string().default("活動照片"),
     }))
     .mutation(({ input }) => createPhoto(input)),
   update: adminProcedure
@@ -119,10 +118,7 @@ const photosRouter = router({
       id: z.number(),
       title: z.string().optional(),
       description: z.string().optional(),
-      imageUrl: z.string().optional(),
-      albumName: z.string().optional(),
-      year: z.string().optional(),
-      sortOrder: z.number().optional(),
+      album: z.string().optional(),
       isActive: z.boolean().optional(),
     }))
     .mutation(({ input }) => {
@@ -136,32 +132,25 @@ const photosRouter = router({
 
 // ── Plans Router ──────────────────────────────────────────────────────────────
 const plansRouter = router({
-  list: publicProcedure
+  listByType: publicProcedure
     .input(z.object({ type: z.string() }))
     .query(({ input }) => getActivePlansByType(input.type)),
-  adminList: adminProcedure.query(() => getAllPlans()),
+  listAll: adminProcedure.query(() => getAllPlans()),
   create: adminProcedure
     .input(z.object({
-      type: z.enum(["mother_tongue_day", "curriculum_plan", "teaching_material", "other"]),
-      title: z.string().min(1),
+      title: z.string(),
       description: z.string().optional(),
-      externalUrl: z.string().optional(),
-      fileUrl: z.string().optional(),
-      fileKey: z.string().optional(),
-      year: z.string().default("2024"),
-      sortOrder: z.number().default(0),
+      planUrl: z.string(),
+      planType: z.string(),
     }))
     .mutation(({ input }) => createPlan(input)),
   update: adminProcedure
     .input(z.object({
       id: z.number(),
-      type: z.enum(["mother_tongue_day", "curriculum_plan", "teaching_material", "other"]).optional(),
       title: z.string().optional(),
       description: z.string().optional(),
-      externalUrl: z.string().optional(),
-      fileUrl: z.string().optional(),
-      year: z.string().optional(),
-      sortOrder: z.number().optional(),
+      planUrl: z.string().optional(),
+      planType: z.string().optional(),
       isActive: z.boolean().optional(),
     }))
     .mutation(({ input }) => {
@@ -176,12 +165,11 @@ const plansRouter = router({
 // ── Announcements Router ──────────────────────────────────────────────────────
 const announcementsRouter = router({
   list: publicProcedure.query(() => getActiveAnnouncements()),
-  adminList: adminProcedure.query(() => getAllAnnouncements()),
+  listAll: adminProcedure.query(() => getAllAnnouncements()),
   create: adminProcedure
     .input(z.object({
-      title: z.string().min(1),
-      content: z.string().optional(),
-      linkUrl: z.string().optional(),
+      title: z.string(),
+      content: z.string(),
     }))
     .mutation(({ input }) => createAnnouncement(input)),
   update: adminProcedure
@@ -189,7 +177,6 @@ const announcementsRouter = router({
       id: z.number(),
       title: z.string().optional(),
       content: z.string().optional(),
-      linkUrl: z.string().optional(),
       isActive: z.boolean().optional(),
     }))
     .mutation(({ input }) => {
@@ -203,11 +190,11 @@ const announcementsRouter = router({
 
 // ── Feedbacks Router ──────────────────────────────────────────────────────────
 const feedbacksRouter = router({
-  list: publicProcedure.query(() => getApprovedFeedbacks()),
-  adminList: adminProcedure.query(() => getAllFeedbacks()),
+  listApproved: publicProcedure.query(() => getApprovedFeedbacks()),
+  listAll: adminProcedure.query(() => getAllFeedbacks()),
   create: publicProcedure
     .input(z.object({
-      name: z.string().min(1),
+      name: z.string(),
       email: z.string().email().optional(),
       role: z.string().default("訪客"),
       message: z.string().min(1),
@@ -219,6 +206,35 @@ const feedbacksRouter = router({
   delete: adminProcedure
     .input(z.object({ id: z.number() }))
     .mutation(({ input }) => deleteFeedback(input.id)),
+});
+
+// ── Page Content Router ───────────────────────────────────────────────────────
+const pageContentRouter = router({
+  getByPageKey: publicProcedure
+    .input(z.object({ pageKey: z.string() }))
+    .query(({ input }) => getPageContent(input.pageKey)),
+  getAll: publicProcedure.query(() => getAllPageContents()),
+  create: adminProcedure
+    .input(z.object({
+      pageKey: z.string(),
+      pageTitle: z.string(),
+      content: z.string().optional(),
+    }))
+    .mutation(({ input }) => createPageContent(input)),
+  update: adminProcedure
+    .input(z.object({
+      pageKey: z.string(),
+      pageTitle: z.string().optional(),
+      content: z.string().optional(),
+      isActive: z.boolean().optional(),
+    }))
+    .mutation(({ input }) => {
+      const { pageKey, ...data } = input;
+      return updatePageContent(pageKey, data);
+    }),
+  delete: adminProcedure
+    .input(z.object({ pageKey: z.string() }))
+    .mutation(({ input }) => deletePageContent(input.pageKey)),
 });
 
 // ── Banner Slides Router ──────────────────────────────────────────────────────
@@ -248,6 +264,7 @@ export const appRouter = router({
   plans: plansRouter,
   announcements: announcementsRouter,
   feedbacks: feedbacksRouter,
+  pageContent: pageContentRouter,
   bannerSlides: bannerSlidesRouter,
   dashboard: dashboardRouter,
 });
