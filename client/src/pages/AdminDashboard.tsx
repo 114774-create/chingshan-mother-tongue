@@ -31,6 +31,9 @@ function BannerSlidesManager() {
   const [banners, setBanners] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [draggedId, setDraggedId] = useState<number | null>(null);
+  const [bannerTitle, setBannerTitle] = useState("");
+  const [bannerSubtitle, setBannerSubtitle] = useState("");
+  const [bannerLink, setBannerLink] = useState("");
 
   const { data: allBanners } = trpc.bannerSlides.listAll.useQuery();
   const createBannerMutation = trpc.bannerSlides.create.useMutation();
@@ -41,14 +44,37 @@ function BannerSlidesManager() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    if (!bannerTitle.trim()) {
+      toast.error("請輸入 Banner 標題");
+      return;
+    }
 
     setIsLoading(true);
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
         const base64 = (event.target?.result as string).split(",")[1];
-        // 上傳圖片
-        toast.success(`Banner 圖片已上傳：${file.name}`);
+        if (!base64) {
+          toast.error("圖片轉換失敗");
+          return;
+        }
+        
+        try {
+          await createBannerMutation.mutateAsync({
+            title: bannerTitle,
+            subtitle: bannerSubtitle,
+            imageUrl: `data:image/${file.type.split("/")[1]};base64,${base64}`,
+            externalLink: bannerLink || undefined,
+            sortOrder: (allBanners?.length || 0) + 1,
+          });
+          
+          setBannerTitle("");
+          setBannerSubtitle("");
+          setBannerLink("");
+          toast.success(`Banner 圖片已上傳：${file.name}`);
+        } catch (uploadError) {
+          toast.error("上傳到伺服器失敗");
+        }
       };
       reader.readAsDataURL(file);
     } catch (error) {
@@ -120,20 +146,61 @@ function BannerSlidesManager() {
         </div>
 
         <div className="space-y-3">
-          <Label htmlFor="banner-upload" className="text-base font-semibold">上傳 Banner 圖片</Label>
-          <div className="flex gap-2">
+          <div>
+            <Label htmlFor="banner-title" className="text-base font-semibold">Banner 標題 *</Label>
             <Input
-              id="banner-upload"
-              type="file"
-              accept="image/*"
-              onChange={handleFileUpload}
+              id="banner-title"
+              type="text"
+              placeholder="例如：青山國小母語教育"
+              value={bannerTitle}
+              onChange={(e) => setBannerTitle(e.target.value)}
               disabled={isLoading}
-              className="flex-1"
+              className="mt-2"
             />
-            <Button disabled={isLoading} variant="outline">
-              <Upload className="w-4 h-4 mr-2" />
-              上傳
-            </Button>
+          </div>
+          
+          <div>
+            <Label htmlFor="banner-subtitle" className="text-base font-semibold">Banner 副標題（選填）</Label>
+            <Input
+              id="banner-subtitle"
+              type="text"
+              placeholder="例如：傳承母語文化，豐富語言生命"
+              value={bannerSubtitle}
+              onChange={(e) => setBannerSubtitle(e.target.value)}
+              disabled={isLoading}
+              className="mt-2"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="banner-link" className="text-base font-semibold">外部連結（選填）</Label>
+            <Input
+              id="banner-link"
+              type="url"
+              placeholder="https://example.com"
+              value={bannerLink}
+              onChange={(e) => setBannerLink(e.target.value)}
+              disabled={isLoading}
+              className="mt-2"
+            />
+          </div>
+          
+          <div>
+            <Label htmlFor="banner-upload" className="text-base font-semibold">上傳 Banner 圖片 *</Label>
+            <div className="flex gap-2 mt-2">
+              <Input
+                id="banner-upload"
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                disabled={isLoading}
+                className="flex-1"
+              />
+              <Button disabled={isLoading || !bannerTitle.trim()} variant="outline">
+                <Upload className="w-4 h-4 mr-2" />
+                上傳
+              </Button>
+            </div>
           </div>
         </div>
       </div>

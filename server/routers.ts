@@ -252,6 +252,7 @@ const bannerSlidesRouter = router({
       subtitle: z.string().optional(),
       imageUrl: z.string(),
       imageKey: z.string().optional(),
+      externalLink: z.string().optional(),
       sortOrder: z.number().default(0),
     }))
     .mutation(({ input }) => createBannerSlide(input)),
@@ -261,6 +262,7 @@ const bannerSlidesRouter = router({
       title: z.string().optional(),
       subtitle: z.string().optional(),
       imageUrl: z.string().optional(),
+      externalLink: z.string().optional(),
       sortOrder: z.number().optional(),
       isActive: z.boolean().optional(),
     }))
