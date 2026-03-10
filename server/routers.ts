@@ -7,12 +7,14 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import {
   createAnnouncement,
+  createBannerSlide,
   createFeedback,
   createPageContent,
   createPhoto,
   createPlan,
   createVideo,
   deleteAnnouncement,
+  deleteBannerSlide,
   deleteFeedback,
   deletePageContent,
   deletePhoto,
@@ -24,6 +26,7 @@ import {
   getActivePlansByType,
   getActiveVideos,
   getAllAnnouncements,
+  getAllBannerSlides,
   getAllFeedbacks,
   getAllPageContents,
   getAllPhotos,
@@ -33,7 +36,9 @@ import {
   getDashboardStats,
   getPageContent,
   getPhotoAlbums,
+  reorderBannerSlides,
   updateAnnouncement,
+  updateBannerSlide,
   updateFeedback,
   updatePageContent,
   updatePhoto,
@@ -240,6 +245,37 @@ const pageContentRouter = router({
 // ── Banner Slides Router ──────────────────────────────────────────────────────
 const bannerSlidesRouter = router({
   list: publicProcedure.query(() => getActiveBannerSlides()),
+  listAll: adminProcedure.query(() => getAllBannerSlides()),
+  create: adminProcedure
+    .input(z.object({
+      title: z.string(),
+      subtitle: z.string().optional(),
+      imageUrl: z.string(),
+      imageKey: z.string().optional(),
+      sortOrder: z.number().default(0),
+    }))
+    .mutation(({ input }) => createBannerSlide(input)),
+  update: adminProcedure
+    .input(z.object({
+      id: z.number(),
+      title: z.string().optional(),
+      subtitle: z.string().optional(),
+      imageUrl: z.string().optional(),
+      sortOrder: z.number().optional(),
+      isActive: z.boolean().optional(),
+    }))
+    .mutation(({ input }) => {
+      const { id, ...data } = input;
+      return updateBannerSlide(id, data);
+    }),
+  delete: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(({ input }) => deleteBannerSlide(input.id)),
+  reorder: adminProcedure
+    .input(z.object({
+      slides: z.array(z.object({ id: z.number(), sortOrder: z.number() }))
+    }))
+    .mutation(({ input }) => reorderBannerSlides(input.slides)),
 });
 
 // ── Dashboard Router ──────────────────────────────────────────────────────────

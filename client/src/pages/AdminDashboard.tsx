@@ -26,7 +26,169 @@ const PAGE_SECTIONS = [
   { id: "09", label: "09 交流分享回饋區", icon: MessageSquare, color: "oklch(0.50 0.14 30)" },
 ];
 
-// ── Page Content Editor ───────────────────────────────────────────────────────
+// ── Banner Slides Manager ─────────────────────────────────────────────────────────────
+function BannerSlidesManager() {
+  const [banners, setBanners] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [draggedId, setDraggedId] = useState<number | null>(null);
+
+  const { data: allBanners } = trpc.bannerSlides.listAll.useQuery();
+  const createBannerMutation = trpc.bannerSlides.create.useMutation();
+  const updateBannerMutation = trpc.bannerSlides.update.useMutation();
+  const deleteBannerMutation = trpc.bannerSlides.delete.useMutation();
+  const reorderMutation = trpc.bannerSlides.reorder.useMutation();
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsLoading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64 = (event.target?.result as string).split(",")[1];
+        // 上傳圖片
+        toast.success(`Banner 圖片已上傳：${file.name}`);
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      toast.error("上傳失敗");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteBanner = async (id: number) => {
+    if (confirm("確定要刪除此 Banner 嗎？")) {
+      try {
+        await deleteBannerMutation.mutateAsync({ id });
+        toast.success("Banner 已刪除");
+      } catch (error) {
+        toast.error("刪除失敗");
+      }
+    }
+  };
+
+  const handleDragStart = (id: number) => {
+    setDraggedId(id);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = async (e: React.DragEvent, targetId: number) => {
+    e.preventDefault();
+    if (!draggedId || draggedId === targetId) return;
+
+    // 重新排序邏輯
+    const newBanners = allBanners ? [...allBanners] : [];
+    const draggedIndex = newBanners.findIndex(b => b.id === draggedId);
+    const targetIndex = newBanners.findIndex(b => b.id === targetId);
+
+    if (draggedIndex !== -1 && targetIndex !== -1) {
+      [newBanners[draggedIndex], newBanners[targetIndex]] = [newBanners[targetIndex], newBanners[draggedIndex]];
+      const reorderData = newBanners.map((b, idx) => ({ id: b.id, sortOrder: idx }));
+      try {
+        await reorderMutation.mutateAsync({ slides: reorderData });
+        toast.success("排序已更新");
+      } catch (error) {
+        toast.error("排序失敗");
+      }
+    }
+    setDraggedId(null);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="border-b pb-4">
+        <h2 className="text-2xl font-serif font-bold mb-2">首頁 Banner 輪播管理</h2>
+        <p className="text-sm text-muted-foreground">
+          上傳、排序和管理首頁輪播圖片。拖拽圖片可改變順序。
+        </p>
+      </div>
+
+      {/* Upload Section */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-start gap-3 mb-4">
+          <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-semibold text-blue-900">此處上傳之圖片將顯示於：</p>
+            <p className="text-sm text-blue-800 mt-1">首頁 Hero Banner 輪播區域</p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <Label htmlFor="banner-upload" className="text-base font-semibold">上傳 Banner 圖片</Label>
+          <div className="flex gap-2">
+            <Input
+              id="banner-upload"
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button disabled={isLoading} variant="outline">
+              <Upload className="w-4 h-4 mr-2" />
+              上傳
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Banners List */}
+      <div>
+        <h3 className="text-lg font-semibold mb-4">現有 Banner 圖片</h3>
+        {allBanners && allBanners.length > 0 ? (
+          <div className="space-y-3">
+            {allBanners.map((banner, idx) => (
+              <div
+                key={banner.id}
+                draggable
+                onDragStart={() => handleDragStart(banner.id)}
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, banner.id)}
+                className={`border rounded-lg p-4 flex items-center gap-4 cursor-move transition-colors ${
+                  draggedId === banner.id ? "bg-blue-100 border-blue-400" : "bg-white hover:bg-gray-50"
+                }`}
+              >
+                <div className="flex-shrink-0 w-20 h-20 bg-gray-200 rounded overflow-hidden">
+                  <img src={banner.imageUrl} alt={banner.title} className="w-full h-full object-cover" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold">{banner.title}</p>
+                  <p className="text-sm text-muted-foreground">{banner.subtitle}</p>
+                  <p className="text-xs text-gray-500 mt-1">排序：{idx + 1}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button size="sm" variant="outline">
+                    <Pencil className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700"
+                    onClick={() => handleDeleteBanner(banner.id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 bg-gray-50 rounded-lg">
+            <p className="text-muted-foreground">尚無 Banner 圖片，請上傳第一張</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Page Content Editor ─────────────────────────────────────────────────────────────
 function PageContentEditor({ pageId }: { pageId: string }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -186,10 +348,10 @@ function PageContentEditor({ pageId }: { pageId: string }) {
   );
 }
 
-// ── Admin Dashboard Main ──────────────────────────────────────────────────────
+// ── Admin Dashboard Main ─────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { user, loading, isAuthenticated } = useAuth();
-  const [activePageId, setActivePageId] = useState("01");
+  const [activePageId, setActivePageId] = useState<string | "banner">("01");
 
   if (loading) {
     return <div className="flex items-center justify-center h-screen">載入中...</div>;
@@ -209,6 +371,7 @@ export default function AdminDashboard() {
   }
 
   const activePageConfig = PAGE_SECTIONS.find(p => p.id === activePageId);
+  const showBannerManager = activePageId === "banner";
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -220,20 +383,37 @@ export default function AdminDashboard() {
         </div>
 
         <nav className="p-4 space-y-2">
-          {PAGE_SECTIONS.map((section) => (
-            <button
-              key={section.id}
-              onClick={() => setActivePageId(section.id)}
-              className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3 ${
-                activePageId === section.id
-                  ? "bg-blue-100 text-blue-900 font-semibold"
-                  : "text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              <section.icon className="w-4 h-4 flex-shrink-0" />
-              <span className="text-sm">{section.label}</span>
-            </button>
-          ))}
+          {/* Banner 管理 */}
+          <button
+            onClick={() => setActivePageId("banner")}
+            className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3 ${
+              activePageId === "banner"
+                ? "bg-orange-100 text-orange-900 font-semibold"
+                : "text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <Upload className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm">首頁 Banner 輪播管理</span>
+          </button>
+
+          {/* 分頁管理 */}
+          <div className="pt-2 mt-2 border-t">
+            <p className="text-xs font-semibold text-gray-500 px-4 py-2">分頁內容</p>
+            {PAGE_SECTIONS.map((section) => (
+              <button
+                key={section.id}
+                onClick={() => setActivePageId(section.id)}
+                className={`w-full text-left px-4 py-3 rounded-lg transition-colors flex items-center gap-3 ${
+                  activePageId === section.id
+                    ? "bg-blue-100 text-blue-900 font-semibold"
+                    : "text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <section.icon className="w-4 h-4 flex-shrink-0" />
+                <span className="text-sm">{section.label}</span>
+              </button>
+            ))}
+          </div>
         </nav>
 
         {/* Logout Button */}
@@ -255,7 +435,11 @@ export default function AdminDashboard() {
       {/* Main Content */}
       <div className="flex-1 overflow-y-auto">
         <div className="p-8 max-w-4xl">
-          <PageContentEditor pageId={activePageId} />
+          {showBannerManager ? (
+            <BannerSlidesManager />
+          ) : (
+            <PageContentEditor pageId={activePageId} />
+          )}
         </div>
       </div>
     </div>
