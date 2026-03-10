@@ -278,6 +278,28 @@ const bannerSlidesRouter = router({
       slides: z.array(z.object({ id: z.number(), sortOrder: z.number() }))
     }))
     .mutation(({ input }) => reorderBannerSlides(input.slides)),
+  uploadImage: adminProcedure
+    .input(z.object({
+      base64: z.string(),
+      fileName: z.string(),
+      mimeType: z.string(),
+    }))
+    .mutation(async ({ input }) => {
+      try {
+        // 將 Base64 轉換為 Buffer
+        const base64Data = input.base64.split(",")[1] || input.base64;
+        const buffer = Buffer.from(base64Data, "base64");
+        
+        // 上傳到 S3
+        const fileKey = `banners/${Date.now()}-${input.fileName}`;
+        const { url } = await storagePut(fileKey, buffer, input.mimeType);
+        
+        return { url, key: fileKey };
+      } catch (error) {
+        console.error("Banner upload error:", error);
+        throw new Error("Failed to upload banner image");
+      }
+    }),
 });
 
 // ── Dashboard Router ──────────────────────────────────────────────────────────

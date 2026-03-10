@@ -40,6 +40,7 @@ function BannerSlidesManager() {
   const updateBannerMutation = trpc.bannerSlides.update.useMutation();
   const deleteBannerMutation = trpc.bannerSlides.delete.useMutation();
   const reorderMutation = trpc.bannerSlides.reorder.useMutation();
+  const uploadImageMutation = trpc.bannerSlides.uploadImage.useMutation();
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -53,17 +54,28 @@ function BannerSlidesManager() {
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
-        const base64 = (event.target?.result as string).split(",")[1];
-        if (!base64) {
+        const base64String = event.target?.result as string;
+        if (!base64String) {
           toast.error("圖片轉換失敗");
+          setIsLoading(false);
           return;
         }
         
         try {
+          // 呼叫後端 uploadImage 路由，將 Base64 轉換為 Blob 並上傳到 S3
+          const uploadResult = await uploadImageMutation.mutateAsync({
+            base64: base64String,
+            fileName: file.name,
+            mimeType: file.type,
+          });
+
+          const imageUrl = uploadResult.url;
+
+          // 使用返回的 CDN URL 建立 Banner
           await createBannerMutation.mutateAsync({
             title: bannerTitle,
             subtitle: bannerSubtitle,
-            imageUrl: `data:image/${file.type.split("/")[1]};base64,${base64}`,
+            imageUrl: imageUrl,
             externalLink: bannerLink || undefined,
             sortOrder: (allBanners?.length || 0) + 1,
           });
@@ -73,13 +85,15 @@ function BannerSlidesManager() {
           setBannerLink("");
           toast.success(`Banner 圖片已上傳：${file.name}`);
         } catch (uploadError) {
+          console.error(uploadError);
           toast.error("上傳到伺服器失敗");
+        } finally {
+          setIsLoading(false);
         }
       };
       reader.readAsDataURL(file);
     } catch (error) {
       toast.error("上傳失敗");
-    } finally {
       setIsLoading(false);
     }
   };
