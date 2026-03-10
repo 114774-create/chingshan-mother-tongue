@@ -118,6 +118,7 @@ export const bannerSlides = mysqlTable("banner_slides", {
   subtitle: varchar("subtitle", { length: 400 }),
   imageUrl: text("imageUrl").notNull(),
   imageKey: varchar("imageKey", { length: 500 }),
+  externalLink: text("externalLink"),
   sortOrder: int("sortOrder").notNull().default(0),
   isActive: boolean("isActive").notNull().default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

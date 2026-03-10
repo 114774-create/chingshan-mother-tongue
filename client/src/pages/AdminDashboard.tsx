@@ -160,6 +160,9 @@ function BannerSlidesManager() {
                 <div className="flex-1">
                   <p className="font-semibold">{banner.title}</p>
                   <p className="text-sm text-muted-foreground">{banner.subtitle}</p>
+                  {banner.externalLink && (
+                    <p className="text-xs text-blue-600 mt-1">連結：{banner.externalLink}</p>
+                  )}
                   <p className="text-xs text-gray-500 mt-1">排序：{idx + 1}</p>
                 </div>
                 <div className="flex gap-2">

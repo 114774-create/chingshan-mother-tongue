@@ -363,6 +363,7 @@ export async function createBannerSlide(data: {
   subtitle?: string;
   imageUrl: string;
   imageKey?: string;
+  externalLink?: string;
   sortOrder?: number;
 }) {
   const db = await getDb();
@@ -374,6 +375,7 @@ export async function updateBannerSlide(id: number, data: Partial<{
   title: string;
   subtitle: string;
   imageUrl: string;
+  externalLink: string;
   sortOrder: number;
   isActive: boolean;
 }>) {

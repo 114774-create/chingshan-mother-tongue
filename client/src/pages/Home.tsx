@@ -43,13 +43,20 @@ function HeroBanner() {
   const prev = () => setCurrent((c) => (c - 1 + displaySlides.length) % displaySlides.length);
   const next = () => setCurrent((c) => (c + 1) % displaySlides.length);
 
+  const handleBannerClick = (externalLink?: string) => {
+    if (externalLink) {
+      window.open(externalLink, '_blank');
+    }
+  };
+
   return (
     <div className="relative overflow-hidden" style={{ height: "420px" }}>
       {displaySlides.map((slide, i) => (
         <div
           key={slide.id}
           className="absolute inset-0 transition-opacity duration-700"
-          style={{ opacity: i === current ? 1 : 0 }}
+          style={{ opacity: i === current ? 1 : 0, cursor: slide.externalLink ? 'pointer' : 'default' }}
+          onClick={() => handleBannerClick(slide.externalLink)}
         >
           <img
             src={slide.imageUrl}

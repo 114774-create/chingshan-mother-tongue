@@ -1,0 +1,1 @@
+ALTER TABLE `banner_slides` ADD `externalLink` text;
