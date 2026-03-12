@@ -53,7 +53,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     if (user.role !== undefined) {
       values.role = user.role;
       updateSet.role = user.role;
-    } else if (user.openId === ENV.ownerOpenId) {
+    } else if (user.email === '114774@csps.tn.edu.tw') {
       values.role = "admin";
       updateSet.role = "admin";
     }
