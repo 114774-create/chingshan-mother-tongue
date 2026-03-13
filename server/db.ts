@@ -12,6 +12,7 @@ import {
   videos,
 } from "../drizzle/schema.js";
 import { ENV } from "./_core/env.js";
+import * as schema from "../drizzle/schema.js";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
