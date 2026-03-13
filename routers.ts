@@ -106,8 +106,9 @@ const photosRouter = router({
       title: z.string(),
       description: z.string().optional(),
       imageUrl: z.string(),
-      imageKey: z.string(),
-      album: z.string().default("活動照片"),
+      imageKey: z.string().optional(),
+      albumName: z.string().default("母語日活動"),
+      year: z.string().default("113"),
     }))
     .mutation(({ input }) => createPhoto(input)),
   update: adminProcedure
@@ -115,7 +116,8 @@ const photosRouter = router({
       id: z.number(),
       title: z.string().optional(),
       description: z.string().optional(),
-      album: z.string().optional(),
+      albumName: z.string().optional(),
+      year: z.string().optional(),
       isActive: z.boolean().optional(),
     }))
     .mutation(({ input }) => {
@@ -137,8 +139,11 @@ const plansRouter = router({
     .input(z.object({
       title: z.string(),
       description: z.string().optional(),
-      planUrl: z.string(),
-      planType: z.string(),
+      externalUrl: z.string().optional(),
+      fileUrl: z.string().optional(),
+      fileKey: z.string().optional(),
+      type: z.enum(["mother_tongue_day", "curriculum_plan", "teaching_material", "other"]).default("other"),
+      year: z.string().default("113"),
     }))
     .mutation(({ input }) => createPlan(input)),
   update: adminProcedure
@@ -306,10 +311,11 @@ export const appRouter = router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      // 改成下面這行，加一個 (ctx.res as any) 強制通過檢查
+      (ctx.res as any).clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
-  }),
+ }),
   upload: uploadRouter,
   videos: videosRouter,
   photos: photosRouter,
