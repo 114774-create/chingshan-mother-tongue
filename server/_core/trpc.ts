@@ -22,9 +22,12 @@ export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
 
 // ── Admin Procedure (密碼驗證模式) ─────────────────────────────────────────────
 export const adminProcedure = publicProcedure.use(({ ctx, next }) => {
+  console.log("[adminProcedure Debug] Received adminPassword:", ctx.adminPassword);
   if (ctx.adminPassword !== '114774') {
+    console.log("[adminProcedure Debug] Authentication failed: Incorrect password.");
     throw new TRPCError({ code: 'UNAUTHORIZED', message: '密碼錯誤，請重新登入' });
   }
+  console.log("[adminProcedure Debug] Authentication successful. User role set to admin.");
   return next({
     ctx: { ...ctx, user: { role: 'admin', email: '114774@csps.tn.edu.tw', id: 1, openId: 'hardcoded_admin_session' } }
   });
