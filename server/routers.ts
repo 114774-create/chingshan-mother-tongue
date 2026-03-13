@@ -48,11 +48,9 @@ import {
 
 // ── Admin guard ───────────────────────────────────────────────────────────────
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  // 註解掉檢查邏輯，或是直接讓它 return next
-  // 不管是誰，進來通通當成管理員
+  // 什麼都不檢查，直接放行
   return next({ ctx });
 });
-
 // ── Upload Router ─────────────────────────────────────────────────────────────
 const uploadRouter = router({
   uploadBase64: adminProcedure
