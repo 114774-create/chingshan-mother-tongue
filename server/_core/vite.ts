@@ -1,67 +1,55 @@
 import express, { type Express } from "express";
 import fs from "fs";
-import { type Server } from "http";
-import { nanoid } from "nanoid";
 import path from "path";
-import { createServer as createViteServer } from "vite";
-import viteConfig from "../../vite.config.js";
+import { fileURLToPath } from "url";
 
-export async function setupVite(app: Express, server: Server) {
-  const serverOptions = {
-    middlewareMode: true,
-    hmr: { server },
-    allowedHosts: true as const,
-  };
+// 在 ESM 模式下，我們需要這樣定義 __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  const vite = await createViteServer({
-    ...viteConfig,
-    configFile: false,
-    server: serverOptions,
-    appType: "custom",
-  });
-
-  app.use(vite.middlewares);
-  app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
-
-    try {
-      const clientTemplate = path.resolve(
-        import.meta.dirname,
-        "../..",
-        "client",
-        "index.html"
-      );
-
-      // always reload the index.html file from disk incase it changes
-      let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`
-      );
-      const page = await vite.transformIndexHtml(url, template);
-      res.status(200).set({ "Content-Type": "text/html" }).end(page);
-    } catch (e) {
-      vite.ssrFixStacktrace(e as Error);
-      next(e);
-    }
-  });
+/**
+ * 在 Vercel 生產環境中，我們完全不需要 setupVite。
+ * 這裡保留空函式是為了確保其他地方引用時不會報錯。
+ */
+export async function setupVite(app: Express, server: any) {
+  console.log("Vercel 環境：跳過 Vite 設定，直接使用靜態檔案。");
 }
 
+/**
+ * 這是 Vercel 運行的核心：直接把已經打包好的網頁（dist）拿給瀏覽器看。
+ */
 export function serveStatic(app: Express) {
-  const distPath =
-    process.env.NODE_ENV === "development"
-      ? path.resolve(import.meta.dirname, "../..", "dist", "public")
-      : path.resolve(import.meta.dirname, "public");
+  // 修正 Vercel 上的路徑判斷
+  // 打包後的檔案通常在專案根目錄的 dist/public
+  const rootDist = path.resolve(__dirname, "../../dist/public");
+  const localPublic = path.resolve(__dirname, "../../public");
+  
+  // 自動偵測哪一個資料夾才是真的存在的
+  let distPath = rootDist;
   if (!fs.existsSync(distPath)) {
-    console.error(
-      `Could not find the build directory: ${distPath}, make sure to build the client first`
-    );
+    distPath = localPublic;
   }
 
+  // 如果還是找不到，至少不要讓伺服器崩潰
+  if (!fs.existsSync(distPath)) {
+    console.warn(`[警告] 找不到靜態資料夾: ${distPath}`);
+  }
+
+  // 1. 提供靜態檔案服務
   app.use(express.static(distPath));
 
-  // fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
-    res.sendFile(path.resolve(distPath, "index.html"));
+  // 2. 萬能路由：如果瀏覽器要找的不是 API，就通通給他 index.html
+  app.use("*", (req, res, next) => {
+    // 排除 API 請求，不要讓 API 也回傳 HTML
+    if (req.originalUrl.startsWith("/api")) {
+      return next();
+    }
+
+    const indexPath = path.resolve(distPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).send("青山國小母語日網站：靜態網頁尚未建置完成，請檢查 Build Logs。");
+    }
   });
 }
