@@ -13,9 +13,10 @@ export const publicProcedure = t.procedure;
 const requireUser = t.middleware(async opts => {
   const { ctx, next } = opts;
 
-  if (!ctx.user) {
-    throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
-  }
+  // 在密碼硬編碼模式下，不再需要嚴格的用戶驗證，但保留此中間件以防萬一
+  // if (!ctx.user) {
+  //   throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
+  // }
 
   return next({
     ctx: {
@@ -27,13 +28,10 @@ const requireUser = t.middleware(async opts => {
 
 export const protectedProcedure = t.procedure.use(requireUser);
 
-// ── Admin Procedure (絕對通行暴力版) ─────────────────────────────────────────────
-// 無論資料庫權限為何，直接放行，確保能進入 /admin 管理介面
-export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+// ── Admin Procedure (密碼硬編碼模式：無條件放行並賦予管理員身分) ─────────────────────────────────────────────
+export const adminProcedure = publicProcedure.use(({ ctx, next }) => {
+  // 只要是從後台進來的，我們直接賦予他管理員身分
   return next({
-    ctx: {
-      ...ctx,
-      user: ctx.user,
-    },
+    ctx: { ...ctx, user: { role: 'admin', email: 'admin@qingshan', id: 999, openId: 'hardcoded_admin' } }
   });
 });

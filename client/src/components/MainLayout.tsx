@@ -54,8 +54,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
 
           <div className="flex-1" />
 
-          {/* Admin Link */}
-          <Link href="/admin">
+          {/* Admin Login Link */}
+          <Link href="/login">
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors cursor-pointer"
               style={{ color: "oklch(0.95 0.02 50)", background: "oklch(0.70 0.18 50 / 0.15)" }}
               onMouseEnter={(e) => (e.currentTarget.style.background = "oklch(0.70 0.18 50 / 0.25)")}

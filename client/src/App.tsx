@@ -16,6 +16,7 @@ import {
   FeedbackPage,
 } from "./pages/StaticPages";
 import AdminDashboard from "./pages/AdminDashboard";
+import Login from "./pages/Login";
 
 function Router() {
   return (
@@ -39,6 +40,8 @@ function Router() {
       <Route path="/related-websites" component={RelatedWebsitesPage} />
       {/* 09 */}
       <Route path="/feedback" component={FeedbackPage} />
+      {/* Login */}
+      <Route path="/login" component={Login} />
       {/* Admin */}
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/404" component={NotFound} />
