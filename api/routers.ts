@@ -1,10 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { COOKIE_NAME } from "@shared/const";
-import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./server/_core/systemRouter";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./server/_core/trpc";
-import { storagePut } from "./server/storage";
+// --- 關鍵修正區：加上 ../server/ ---
+import { COOKIE_NAME } from "../shared/const"; // 假設 shared 在最外面
+import { getSessionCookieOptions } from "../server/_core/cookies";
+import { systemRouter } from "../server/_core/systemRouter";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "../server/_core/trpc";
+import { storagePut } from "../server/storage";
 import {
   createAnnouncement,
   createBannerSlide,
@@ -44,7 +45,7 @@ import {
   updatePhoto,
   updatePlan,
   updateVideo,
-} from "./server/db"; // 這裡要改成 ./server/db
+} from "../server/db"; // 這裡也要加 ../server/
 
 // ── Upload Router ─────────────────────────────────────────────────────────────
 const uploadRouter = router({
