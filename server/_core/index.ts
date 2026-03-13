@@ -49,7 +49,7 @@ app.use(
 // development mode uses Vite, production mode uses static files
 if (process.env.NODE_ENV === "development") {
   // 開發環境：啟動伺服器
-  async function startServer() {
+  const startServer = async () => {
     const server = createServer(app);
     await setupVite(app, server);
 
@@ -63,7 +63,7 @@ if (process.env.NODE_ENV === "development") {
     server.listen(port, () => {
       console.log(`Server running on http://localhost:${port}/`);
     });
-  }
+  };
 
   startServer().catch(console.error);
 } else {

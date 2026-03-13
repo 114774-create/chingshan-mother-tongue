@@ -211,7 +211,7 @@ export function RelatedWebsitesPage() {
 export function FeedbackPage() {
   const [form, setForm] = useState({ name: "", email: "", role: "訪客", message: "" });
   const [submitted, setSubmitted] = useState(false);
-  const { data: feedbacks } = trpc.feedbacks.list.useQuery();
+  const { data: feedbacks } = trpc.feedbacks.listApproved.useQuery();
   const createFeedback = trpc.feedbacks.create.useMutation({
     onSuccess: () => {
       setSubmitted(true);

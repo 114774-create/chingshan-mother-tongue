@@ -81,7 +81,7 @@ function PlanCard({ plan }: { plan: typeof DEFAULT_PLANS.mother_tongue_day[0] })
 }
 
 export function MotherTongueDayPage() {
-  const { data: plans, isLoading } = trpc.plans.list.useQuery({ type: "mother_tongue_day" });
+  const { data: plans, isLoading } = trpc.plans.listByType.useQuery({ type: "mother_tongue_day" });
   const displayPlans = (plans && plans.length > 0) ? plans : DEFAULT_PLANS.mother_tongue_day;
 
   return (
@@ -118,7 +118,7 @@ export function MotherTongueDayPage() {
 }
 
 export function CurriculumPlanPage() {
-  const { data: plans, isLoading } = trpc.plans.list.useQuery({ type: "curriculum_plan" });
+  const { data: plans, isLoading } = trpc.plans.listByType.useQuery({ type: "curriculum_plan" });
   const displayPlans = (plans && plans.length > 0) ? plans : DEFAULT_PLANS.curriculum_plan;
 
   return (
@@ -155,7 +155,7 @@ export function CurriculumPlanPage() {
 }
 
 export function SelfMadeMaterialsPage() {
-  const { data: plans, isLoading } = trpc.plans.list.useQuery({ type: "teaching_material" });
+  const { data: plans, isLoading } = trpc.plans.listByType.useQuery({ type: "teaching_material" });
   const displayPlans = (plans && plans.length > 0) ? plans : DEFAULT_PLANS.teaching_material;
 
   return (
