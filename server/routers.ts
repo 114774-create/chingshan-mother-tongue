@@ -3,7 +3,7 @@ import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { storagePut } from "./storage";
 import {
   createAnnouncement,
@@ -46,11 +46,7 @@ import {
   updateVideo,
 } from "./db";
 
-// ── Admin guard ───────────────────────────────────────────────────────────────
-const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  // 什麼都不檢查，直接放行
-  return next({ ctx });
-});
+
 // ── Upload Router ─────────────────────────────────────────────────────────────
 const uploadRouter = router({
   uploadBase64: adminProcedure
@@ -294,7 +290,7 @@ const bannerSlidesRouter = router({
         return { url, key: fileKey };
       } catch (error) {
         console.error("Banner upload error:", error);
-        throw new Error("Failed to upload banner image");
+                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to upload banner image" });
       }
     }),
 });

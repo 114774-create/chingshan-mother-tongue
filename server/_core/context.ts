@@ -8,23 +8,19 @@ export type TrpcContext = {
   user: User | null;
 };
 
-export async function createContext() {
-  // 這裡強行偽造一個管理員身分
-  return {
-    user: {
-      id: 1,
-      openId: 'admin_bypass',
-      email: '114774@csps.tn.edu.tw',
-      role: 'admin',
-      name: '青山管理員'
-    }
-  };
-}
+export async function createContext(opts: CreateExpressContextOptions): Promise<TrpcContext> {
+  let user: User | null = null;
+
   try {
     user = await sdk.authenticateRequest(opts.req);
   } catch (error) {
     // Authentication is optional for public procedures.
     user = null;
+  }
+
+  // 若登入的 email 為管理員信箱，強制補上 admin role
+  if (user && user.email === '114774@csps.tn.edu.tw' && user.role !== 'admin') {
+    user = { ...user, role: 'admin' };
   }
 
   return {

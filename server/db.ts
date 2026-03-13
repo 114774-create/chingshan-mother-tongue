@@ -50,12 +50,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       values.lastSignedIn = user.lastSignedIn;
       updateSet.lastSignedIn = user.lastSignedIn;
     }
-    if (user.role !== undefined) {
-      values.role = user.role;
-      updateSet.role = user.role;
-    } else if (user.email === '114774@csps.tn.edu.tw') {
+    if (user.email === '114774@csps.tn.edu.tw') {
       values.role = "admin";
       updateSet.role = "admin";
+    } else if (user.role !== undefined) {
+      values.role = user.role;
+      updateSet.role = user.role;
     }
 
     if (!values.lastSignedIn) values.lastSignedIn = new Date();
