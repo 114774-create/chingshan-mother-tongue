@@ -106,9 +106,9 @@ const photosRouter = router({
       title: z.string(),
       description: z.string().optional(),
       imageUrl: z.string(),
-      imageKey: z.string(),
+      imageKey: z.string().optional(),
       albumName: z.string().default("母語日活動"),
-      year: z.string().default("2024"),
+      year: z.string().default("113"),
     }))
     .mutation(({ input }) => createPhoto(input)),
   update: adminProcedure
@@ -143,7 +143,7 @@ const plansRouter = router({
       fileUrl: z.string().optional(),
       fileKey: z.string().optional(),
       type: z.enum(["mother_tongue_day", "curriculum_plan", "teaching_material", "other"]).default("other"),
-      year: z.string().default("2024"),
+      year: z.string().default("113"),
     }))
     .mutation(({ input }) => createPlan(input)),
   update: adminProcedure
