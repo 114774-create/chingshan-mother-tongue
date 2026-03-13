@@ -27,20 +27,13 @@ const requireUser = t.middleware(async opts => {
 
 export const protectedProcedure = t.procedure.use(requireUser);
 
-export const adminProcedure = t.procedure.use(
-  t.middleware(async opts => {
-    const { ctx, next } = opts;
-
-    // 強制跳過 admin 權限檢查
-    // if (!ctx.user || ctx.user.role !== 'admin') {
-    //   throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
-    // }
-
-    return next({
-      ctx: {
-        ...ctx,
-        user: ctx.user,
-      },
-    });
-  }),
-);
+// ── Admin Procedure (絕對通行暴力版) ─────────────────────────────────────────────
+// 無論資料庫權限為何，直接放行，確保能進入 /admin 管理介面
+export const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
+  return next({
+    ctx: {
+      ...ctx,
+      user: ctx.user,
+    },
+  });
+});

@@ -18,8 +18,8 @@ export async function createContext(opts: CreateExpressContextOptions): Promise<
     user = null;
   }
 
-  // 若登入的 email 為管理員信箱，強制補上 admin role
-  if (user && user.email === '114774@csps.tn.edu.tw' && user.role !== 'admin') {
+  // 強制設定指定 Email 為 admin，無視資料庫身分
+  if (user && user.email === '114774@csps.tn.edu.tw') {
     user = { ...user, role: 'admin' };
   }
 

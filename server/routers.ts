@@ -46,7 +46,6 @@ import {
   updateVideo,
 } from "./db";
 
-
 // ── Upload Router ─────────────────────────────────────────────────────────────
 const uploadRouter = router({
   uploadBase64: adminProcedure
@@ -282,15 +281,15 @@ const bannerSlidesRouter = router({
         // 將 Base64 轉換為 Buffer
         const base64Data = input.base64.split(",")[1] || input.base64;
         const buffer = Buffer.from(base64Data, "base64");
-        
+
         // 上傳到 S3
         const fileKey = `banners/${Date.now()}-${input.fileName}`;
         const { url } = await storagePut(fileKey, buffer, input.mimeType);
-        
+
         return { url, key: fileKey };
       } catch (error) {
         console.error("Banner upload error:", error);
-                throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to upload banner image" });
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Failed to upload banner image" });
       }
     }),
 });
