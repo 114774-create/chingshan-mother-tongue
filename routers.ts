@@ -2,9 +2,9 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
-import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
-import { storagePut } from "./storage";
+import { systemRouter } from "./server/_core/systemRouter";
+import { adminProcedure, protectedProcedure, publicProcedure, router } from "./server/_core/trpc";
+import { storagePut } from "./server/storage";
 import {
   createAnnouncement,
   createBannerSlide,
@@ -44,7 +44,7 @@ import {
   updatePhoto,
   updatePlan,
   updateVideo,
-} from "./db";
+} from "./server/db"; // 這裡要改成 ./server/db
 
 // ── Upload Router ─────────────────────────────────────────────────────────────
 const uploadRouter = router({
