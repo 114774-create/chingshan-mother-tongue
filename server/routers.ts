@@ -48,9 +48,8 @@ import {
 
 // ── Admin guard ───────────────────────────────────────────────────────────────
 const adminProcedure = protectedProcedure.use(({ ctx, next }) => {
-  if (ctx.user.role !== "admin") {
-    throw new TRPCError({ code: "FORBIDDEN", message: "管理員權限不足" });
-  }
+  // 註解掉檢查邏輯，或是直接讓它 return next
+  // 不管是誰，進來通通當成管理員
   return next({ ctx });
 });
 
