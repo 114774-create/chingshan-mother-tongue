@@ -42,6 +42,12 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
+      headers() {
+        // 讓前端每次發送請求，都自動帶上存在 localStorage 裡的密碼
+        return {
+          'x-admin-password': localStorage.getItem('admin_password') || '',
+        };
+      },
       fetch(input, init) {
         return globalThis.fetch(input, {
           ...(init ?? {}),

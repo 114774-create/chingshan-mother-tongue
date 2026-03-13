@@ -5,22 +5,17 @@ import type { User } from "../../drizzle/schema";
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
   res: CreateExpressContextOptions["res"];
-  user: User | null;
+  user?: User | null; // user 現在是可選的，因為可能通過密碼驗證注入
+  adminPassword?: string; // 新增 adminPassword 屬性
 };
 
-// 最終繞道：createContext 永遠回傳一個硬編碼的管理員物件
 export async function createContext(opts: CreateExpressContextOptions): Promise<TrpcContext> {
+  // 從請求頭中抓取我們自定義的密碼標籤
+  const adminPassword = opts.req.headers["x-admin-password"];
+
   return {
     req: opts.req,
     res: opts.res,
-    user: {
-      id: 1, // 硬編碼 ID
-      openId: 'hardcoded_admin_bypass',
-      email: '114774@csps.tn.edu.tw',
-      role: 'admin',
-      name: '青山管理員',
-      loginMethod: 'hardcoded',
-      lastSignedIn: new Date(),
-    },
+    adminPassword: typeof adminPassword === "string" ? adminPassword : undefined,
   };
 }

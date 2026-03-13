@@ -19,8 +19,8 @@ export default function Login() {
     try {
       // 硬編碼密碼檢查
       if (password === "114774") {
-        // 存入本地存儲和 localStorage
-        localStorage.setItem("admin_token", "hardcoded_admin_token");
+        // 存入 localStorage 的密碼，供 tRPC 自動帶入 Header
+        localStorage.setItem("admin_password", "114774");
         localStorage.setItem("admin_authenticated", "true");
         
         // 重定向到管理後台
