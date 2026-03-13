@@ -1,20 +1,18 @@
 import "dotenv/config";
 import express from "express";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-// 1. 如果 oauth.ts 在 server/_core 裡
 import { registerOAuthRoutes } from "../server/_core/oauth"; 
 
-// 2. 注意這裡！！如果 routers.ts 在根目錄，就要改為 ../routers
-// 如果它在 server 資料夾裡，就保持 ../server/routers
-import { appRouter } from "../server/routers"; 
+// --- 關鍵修正區 ---
+// 如果 routers.ts 是在最外面，就把 ../server/ 拿掉，改為 ../routers
+import { appRouter } from "../routers"; 
 
-// 3. 注意這裡！！如果 context.ts 在根目錄，就要改為 ../context
-// 如果它在 server/_core 裡，就保持 ../server/_core/context
-import { createContext } from "../server/_core/context"; 
+// 如果 context.ts 也是在最外面，就改為 ../context
+import { createContext } from "../context"; 
+// ----------------
 
 import { serveStatic } from "../server/_core/vite";
-
-const app = express();
+// ...後面保持不變
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
