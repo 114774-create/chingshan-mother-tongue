@@ -1,27 +1,24 @@
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
-import * as schema from "../drizzle/schema.js";
+import * as schema from "../drizzle/schema.js"; // 就算檔名是 .ts，這裡也要寫 .js
 
-// 這裡我們直接使用一個全域變數，避免 Vercel 重複開啟太多連線導致資料庫爆炸
-let connection: mysql.Connection | null = null;
 let _db: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export async function getDb() {
   const url = process.env.DATABASE_URL;
-  
   if (!url) {
-    console.error("[資料庫錯誤] 找不到 DATABASE_URL，請檢查 Vercel 環境變數。");
+    console.error("[Database] 找不到 DATABASE_URL");
     return null;
   }
 
   if (!_db) {
     try {
-      // TiDB Cloud 必須使用 SSL 連線，這裡強迫開啟
-      connection = await mysql.createConnection(url);
+      // TiDB Cloud 的穩定連線方式
+      const connection = await mysql.createConnection(url);
       _db = drizzle(connection, { schema, mode: "default" });
-      console.log("[資料庫] 成功建立新連線");
+      console.log("[Database] 已成功連線至 TiDB");
     } catch (error) {
-      console.error("[資料庫] 連線失敗:", error);
+      console.error("[Database] 連線失敗:", error);
       _db = null;
     }
   }
