@@ -14,9 +14,15 @@ export async function getDb() {
   if (!url) return null;
   if (!_db) {
     try {
-      const connection = await mysql.createPool({ uri: url });
+      const connection = await mysql.createPool({ 
+        uri: url,
+        ssl: { rejectUnauthorized: true }
+      });
       _db = drizzle(connection, { schema, mode: "default" });
-    } catch (e) { return null; }
+    } catch (e) { 
+      console.error('[DB Connection Error]', e);
+      return null; 
+    }
   }
   return _db;
 }

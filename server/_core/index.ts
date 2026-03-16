@@ -1,31 +1,9 @@
 import "dotenv/config";
 import express from "express";
-import { createServer } from "http";
-import net from "net";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
-import { serveStatic, setupVite } from "./vite";
-
-function isPortAvailable(port: number): Promise<boolean> {
-  return new Promise(resolve => {
-    const server = net.createServer();
-    server.listen(port, () => {
-      server.close(() => resolve(true));
-    });
-    server.on("error", () => resolve(false));
-  });
-}
-
-async function findAvailablePort(startPort: number = 3000): Promise<number> {
-  for (let port = startPort; port < startPort + 20; port++) {
-    if (await isPortAvailable(port)) {
-      return port;
-    }
-  }
-  throw new Error(`No available port found starting from ${startPort}`);
-}
 
 // 建立並配置 Express 應用
 export const app = express();
@@ -45,28 +23,3 @@ app.use(
     createContext,
   })
 );
-
-// development mode uses Vite, production mode uses static files
-if (process.env.NODE_ENV === "development") {
-  // 開發環境：啟動伺服器
-  const startServer = async () => {
-    const server = createServer(app);
-    await setupVite(app, server);
-
-    const preferredPort = parseInt(process.env.PORT || "3000");
-    const port = await findAvailablePort(preferredPort);
-
-    if (port !== preferredPort) {
-      console.log(`Port ${preferredPort} is busy, using port ${port} instead`);
-    }
-
-    server.listen(port, () => {
-      console.log(`Server running on http://localhost:${port}/`);
-    });
-  };
-
-  startServer().catch(console.error);
-} else {
-  // 生產環境（Vercel）：配置靜態檔案
-  serveStatic(app);
-}
