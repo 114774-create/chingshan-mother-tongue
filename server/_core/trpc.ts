@@ -1,7 +1,6 @@
-import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
-import type { TrpcContext } from "./context";
+import type { TrpcContext } from "./context.js";
 
 const t = initTRPC.context<TrpcContext>().create({
   transformer: superjson,
@@ -10,8 +9,11 @@ const t = initTRPC.context<TrpcContext>().create({
 export const router = t.router;
 export const publicProcedure = t.procedure;
 
-// 在新的密碼驗證系統中，protectedProcedure 也不再需要嚴格的用戶驗證
+// protectedProcedure：基本保護，檢查是否已驗證
 export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
+  if (!ctx.isAuthenticated) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: '請先登入' });
+  }
   return next({
     ctx: {
       ...ctx,
@@ -20,15 +22,15 @@ export const protectedProcedure = publicProcedure.use(({ ctx, next }) => {
   });
 });
 
-// ── Admin Procedure (密碼驗證模式) ─────────────────────────────────────────────
+// adminProcedure：管理員專用，檢查 Cookie 中的 admin_token
 export const adminProcedure = publicProcedure.use(({ ctx, next }) => {
-  console.log("[adminProcedure Debug] Received adminPassword:", ctx.adminPassword);
-  if (ctx.adminPassword !== '114774') {
-    console.log("[adminProcedure Debug] Authentication failed: Incorrect password.");
-    throw new TRPCError({ code: 'UNAUTHORIZED', message: '密碼錯誤，請重新登入' });
+  if (!ctx.isAuthenticated) {
+    throw new TRPCError({ code: 'UNAUTHORIZED', message: '管理員權限不足' });
   }
-  console.log("[adminProcedure Debug] Authentication successful. User role set to admin.");
   return next({
-    ctx: { ...ctx, user: { role: 'admin', email: '114774@csps.tn.edu.tw', id: 1, openId: 'hardcoded_admin_session' } }
+    ctx: {
+      ...ctx,
+      user: ctx.user || { id: 0, role: "admin", name: "青山管理員" },
+    },
   });
 });

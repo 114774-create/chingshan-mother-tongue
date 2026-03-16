@@ -311,6 +311,18 @@ const dashboardRouter = router({
 export const appRouter = router({
   system: systemRouter,
   auth: router({
+    login: publicProcedure
+      .input(z.object({ password: z.string() }))
+      .mutation(({ input, ctx }) => {
+        if (input.password !== "114774") {
+          throw new Error("密碼錯誤");
+        }
+        (ctx.res as any).setHeader(
+          "Set-Cookie",
+          "admin_token=114774; Path=/; HttpOnly; SameSite=Lax"
+        );
+        return { success: true };
+      }),
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);

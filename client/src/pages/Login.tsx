@@ -4,35 +4,26 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Lock, AlertCircle } from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
 export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [, setLocation] = useLocation();
+  
+  const loginMutation = trpc.auth.login.useMutation();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
     try {
-      // 硬編碼密碼檢查
-      if (password === "114774") {
-        // 存入 localStorage 的密碼，供 tRPC 自動帶入 Header
-        localStorage.setItem("admin_password", "114774");
-        localStorage.setItem("admin_authenticated", "true");
-        
-        // 重定向到管理後台
-        setLocation("/admin");
-      } else {
-        setError("密碼錯誤，請重試");
-        setPassword("");
-      }
-    } catch (err) {
-      setError("登入失敗，請稍後重試");
-    } finally {
-      setLoading(false);
+      await loginMutation.mutateAsync({ password });
+      // 登入成功後跳轉到管理後台
+      setLocation("/admin");
+    } catch (err: any) {
+      setError(err.message || "登入失敗，請稍後重試");
+      setPassword("");
     }
   };
 
@@ -60,7 +51,7 @@ export default function Login() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10"
-                disabled={loading}
+                disabled={loginMutation.isPending}
                 autoFocus
               />
             </div>
@@ -76,10 +67,10 @@ export default function Login() {
           <Button
             type="submit"
             className="w-full"
-            disabled={loading}
+            disabled={loginMutation.isPending}
             style={{ background: "oklch(0.70 0.18 50)" }}
           >
-            {loading ? "登入中..." : "登入"}
+            {loginMutation.isPending ? "登入中..." : "登入"}
           </Button>
         </form>
 
