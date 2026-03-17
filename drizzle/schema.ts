@@ -34,6 +34,7 @@ export const videos = mysqlTable("videos", {
   thumbnailUrl: text("thumbnailUrl"),
   language: varchar("language", { length: 50 }).notNull().default("閩南語"),
   category: varchar("category", { length: 100 }).notNull().default("一般"),
+  pageKey: varchar("pageKey", { length: 100 }).notNull().default("media-gallery"), // ← 新增
   sortOrder: int("sortOrder").notNull().default(0),
   isActive: boolean("isActive").notNull().default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -52,6 +53,7 @@ export const photos = mysqlTable("photos", {
   imageKey: varchar("imageKey", { length: 500 }),
   albumName: varchar("albumName", { length: 200 }).notNull().default("母語日活動"),
   year: varchar("year", { length: 10 }).notNull().default("2024"),
+  pageKey: varchar("pageKey", { length: 100 }).notNull().default("photo-album"), // ← 新增
   sortOrder: int("sortOrder").notNull().default(0),
   isActive: boolean("isActive").notNull().default(true),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -88,6 +90,7 @@ export const announcements = mysqlTable("announcements", {
   title: varchar("title", { length: 255 }).notNull(),
   content: text("content"),
   linkUrl: text("linkUrl"),
+  pageKey: varchar("pageKey", { length: 100 }).notNull().default("home"), // ← 新增
   isActive: boolean("isActive").notNull().default(true),
   publishedAt: timestamp("publishedAt").defaultNow().notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
