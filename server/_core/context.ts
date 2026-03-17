@@ -1,35 +1,28 @@
-import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
+iimport type { NodeHTTPCreateContextFnOptions } from "@trpc/server/adapters/node-http";
 
 export type TrpcContext = {
   req: any;
   res: any;
   user?: any;
-  adminPassword?: string;
+  isAuthenticated: boolean;
 };
 
-export async function createContext(opts: CreateExpressContextOptions): Promise<TrpcContext> {
-  try {
-    const adminPassword = opts.req.headers["x-admin-password"];
-    const expectedPassword = process.env.ADMIN_PASSWORD;
+export async function createContext(
+  opts: NodeHTTPCreateContextFnOptions
+): Promise<TrpcContext> {
 
-    // 比對密碼
-    const isAdmin = typeof adminPassword === "string" && 
-                    expectedPassword !== undefined && 
-                    adminPassword === expectedPassword;
+  const adminPassword = opts.req.headers["x-admin-password"];
+  const expectedPassword = process.env.ADMIN_PASSWORD;
 
-    return {
-      req: opts.req,
-      res: opts.res,
-      adminPassword: typeof adminPassword === "string" ? adminPassword : undefined,
-      user: isAdmin ? { id: 0, role: "admin", name: "管理員" } : null,
-    };
-  } catch (error) {
-    // 萬一出錯，至少回傳一個空的 context，不要讓伺服器直接死掉
-    console.error("Context Error:", error);
-    return {
-      req: opts.req,
-      res: opts.res,
-      user: null,
-    };
-  }
+  const isAdmin =
+    typeof adminPassword === "string" &&
+    expectedPassword !== undefined &&
+    adminPassword === expectedPassword;
+
+  return {
+    req: opts.req,
+    res: opts.res,
+    user: isAdmin ? { id: 0, role: "admin", name: "管理員" } : null,
+    isAuthenticated: isAdmin,
+  };
 }
