@@ -1,17 +1,18 @@
+import type { NodeHTTPCreateContextFnOptions } from "@trpc/server/adapters/node-http";
 import { parse } from "cookie";
 
-export async function createContext({ req }: { req: any }) {
-  const cookieHeader = req.headers?.get?.("cookie") || req.headers?.cookie || "";
+export async function createContext(
+  opts: NodeHTTPCreateContextFnOptions<any, any>
+) {
+  const cookieHeader = opts.req.headers.cookie || "";
   const cookies = parse(cookieHeader);
-  const adminPassword = req.headers?.get?.("x-admin-password") 
-    || req.headers?.["x-admin-password"] 
-    || "";
+  const adminPassword = opts.req.headers["x-admin-password"] || "";
 
   const isAuthenticated = adminPassword === "114774";
 
   return {
-    req,
-    res: null,
+    req: opts.req,
+    res: opts.res,
     isAuthenticated,
     user: isAuthenticated ? { id: 0, role: "admin", name: "青山管理員" } : null,
   };
