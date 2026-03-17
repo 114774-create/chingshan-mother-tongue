@@ -35,10 +35,10 @@ queryClient.getMutationCache().subscribe(event => {
 });
 
 const trpcClient = trpc.createClient({
-  transformer: superjson,
   links: [
     httpBatchLink({
       url: "/api/trpc",
+      transformer: superjson,
       headers() {
         return {
           'x-admin-password': localStorage.getItem('admin_password') || '',
