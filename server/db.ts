@@ -2,9 +2,9 @@ import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import mysql from "mysql2/promise";
 import * as schema from "../drizzle/schema.js";
-import { 
-  users, videos, photos, plans, announcements, 
-  feedbacks, pageContents, bannerSlides 
+import {
+  users, videos, photos, plans, announcements,
+  feedbacks, pageContents, bannerSlides
 } from "../drizzle/schema.js";
 
 let _db: any = null;
@@ -14,20 +14,20 @@ export async function getDb() {
   if (!url) return null;
   if (!_db) {
     try {
-      const connection = await mysql.createPool({ 
+      const connection = await mysql.createPool({
         uri: url,
         ssl: { rejectUnauthorized: true }
       });
       _db = drizzle(connection, { schema, mode: "default" });
-    } catch (e) { 
+    } catch (e) {
       console.error('[DB Connection Error]', e);
-      return null; 
+      return null;
     }
   }
   return _db;
 }
 
-// ── 1. Users (使用者管理) ──
+// ── Users ──
 export async function upsertUser(user: any) {
   const db = await getDb();
   if (!db || !user.openId) return;
@@ -49,11 +49,15 @@ export async function getUserByOpenId(openId: string) {
   } catch { return undefined; }
 }
 
-// ── 2. Announcements (公告管理 - 這是剛剛噴錯的地方) ──
-export async function getActiveAnnouncements() {
+// ── Announcements ──
+export async function getActiveAnnouncements(pageKey?: string) {
   const db = await getDb();
   if (!db) return [];
-  try { return await db.select().from(announcements).where(eq(announcements.isActive, true)).orderBy(desc(announcements.publishedAt)); } catch { return []; }
+  try {
+    const conditions = [eq(announcements.isActive, true)];
+    if (pageKey) conditions.push(eq(announcements.pageKey, pageKey));
+    return await db.select().from(announcements).where(and(...conditions)).orderBy(desc(announcements.publishedAt));
+  } catch { return []; }
 }
 export async function getAllAnnouncements() {
   const db = await getDb();
@@ -76,11 +80,15 @@ export async function deleteAnnouncement(id: number) {
   await db.delete(announcements).where(eq(announcements.id, id));
 }
 
-// ── 3. Videos (影片管理) ──
-export async function getActiveVideos() {
+// ── Videos ──
+export async function getActiveVideos(pageKey?: string) {
   const db = await getDb();
   if (!db) return [];
-  try { return await db.select().from(videos).where(eq(videos.isActive, true)).orderBy(desc(videos.sortOrder)); } catch { return []; }
+  try {
+    const conditions = [eq(videos.isActive, true)];
+    if (pageKey) conditions.push(eq(videos.pageKey, pageKey));
+    return await db.select().from(videos).where(and(...conditions)).orderBy(desc(videos.sortOrder));
+  } catch { return []; }
 }
 export async function getAllVideos() {
   const db = await getDb();
@@ -103,11 +111,15 @@ export async function deleteVideo(id: number) {
   await db.delete(videos).where(eq(videos.id, id));
 }
 
-// ── 4. Photos (照片管理) ──
-export async function getActivePhotos() {
+// ── Photos ──
+export async function getActivePhotos(pageKey?: string) {
   const db = await getDb();
   if (!db) return [];
-  try { return await db.select().from(photos).where(eq(photos.isActive, true)).orderBy(desc(photos.sortOrder)); } catch { return []; }
+  try {
+    const conditions = [eq(photos.isActive, true)];
+    if (pageKey) conditions.push(eq(photos.pageKey, pageKey));
+    return await db.select().from(photos).where(and(...conditions)).orderBy(desc(photos.sortOrder));
+  } catch { return []; }
 }
 export async function getAllPhotos() {
   const db = await getDb();
@@ -119,7 +131,7 @@ export async function getPhotoAlbums() {
   if (!db) return [];
   try {
     const all = await db.select({ albumName: photos.albumName }).from(photos).where(eq(photos.isActive, true));
-    return [...new Set(all.map(p => p.albumName))];
+    return [...new Set(all.map((p: any) => p.albumName))];
   } catch { return []; }
 }
 export async function createPhoto(data: any) {
@@ -138,7 +150,7 @@ export async function deletePhoto(id: number) {
   await db.delete(photos).where(eq(photos.id, id));
 }
 
-// ── 5. Plans (計畫管理) ──
+// ── Plans ──
 export async function getActivePlansByType(type: string) {
   const db = await getDb();
   if (!db) return [];
@@ -165,7 +177,7 @@ export async function deletePlan(id: number) {
   await db.delete(plans).where(eq(plans.id, id));
 }
 
-// ── 6. Banner Slides (輪播圖管理) ──
+// ── Banner Slides ──
 export async function getActiveBannerSlides() {
   const db = await getDb();
   if (!db) return [];
@@ -197,7 +209,7 @@ export async function reorderBannerSlides(slides: Array<{ id: number; sortOrder:
   await Promise.all(slides.map(s => db.update(bannerSlides).set({ sortOrder: s.sortOrder }).where(eq(bannerSlides.id, s.id))));
 }
 
-// ── 7. Feedbacks (意見回饋) ──
+// ── Feedbacks ──
 export async function getApprovedFeedbacks() {
   const db = await getDb();
   if (!db) return [];
@@ -224,7 +236,7 @@ export async function deleteFeedback(id: number) {
   await db.delete(feedbacks).where(eq(feedbacks.id, id));
 }
 
-// ── 8. Page Contents (頁面內容) ──
+// ── Page Contents ──
 export async function getPageContent(pageKey: string) {
   const db = await getDb();
   if (!db) return null;
@@ -254,7 +266,7 @@ export async function deletePageContent(pageKey: string) {
   await db.delete(pageContents).where(eq(pageContents.pageKey, pageKey));
 }
 
-// ── 9. Dashboard Stats (後台統計) ──
+// ── Dashboard Stats ──
 export async function getDashboardStats() {
   const db = await getDb();
   if (!db) return { videos: 0, photos: 0, announcements: 0, feedbacks: 0 };
