@@ -1,12 +1,11 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-// --- 關鍵修正區：所有的路徑最後都要加上 .js ---
-import { COOKIE_NAME } from "../shared/const.js"; // 加上 .js
-import { getSessionCookieOptions } from "../server/_core/cookies.js"; // 加上 .js
-import { systemRouter } from "../server/_core/systemRouter.js"; // 加上 .js
-import { adminProcedure, protectedProcedure, publicProcedure, router } from "../server/_core/trpc.js"; // 加上 .js
-import { storagePut } from "../server/storage.js"; // 加上 .js
+import { COOKIE_NAME } from "../shared/const.js";
+import { getSessionCookieOptions } from "../server/_core/cookies.js";
+import { systemRouter } from "../server/_core/systemRouter.js";
+import { adminProcedure, publicProcedure, router } from "../server/_core/trpc.js";
+import { storagePut } from "../server/storage.js";
 
 import {
   createAnnouncement,
@@ -47,7 +46,7 @@ import {
   updatePhoto,
   updatePlan,
   updateVideo,
-} from "../server/db.js"; // 加上 .js
+} from "../server/db.js";
 
 // ── Upload Router ─────────────────────────────────────────────────────────────
 const uploadRouter = router({
@@ -286,14 +285,10 @@ const bannerSlidesRouter = router({
     }))
     .mutation(async ({ input }) => {
       try {
-        // 將 Base64 轉換為 Buffer
         const base64Data = input.base64.split(",")[1] || input.base64;
         const buffer = Buffer.from(base64Data, "base64");
-
-        // 上傳到 S3
         const fileKey = `banners/${Date.now()}-${input.fileName}`;
         const { url } = await storagePut(fileKey, buffer, input.mimeType);
-
         return { url, key: fileKey };
       } catch (error) {
         console.error("Banner upload error:", error);
@@ -311,11 +306,12 @@ const dashboardRouter = router({
 export const appRouter = router({
   system: systemRouter,
   auth: router({
+    // ✅ login 從 server/routers.ts 補回來，這是登入功能的核心
     login: publicProcedure
       .input(z.object({ password: z.string() }))
       .mutation(({ input, ctx }) => {
         if (input.password !== "114774") {
-          throw new Error("密碼錯誤");
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "密碼錯誤" });
         }
         (ctx.res as any).setHeader(
           "Set-Cookie",
@@ -326,11 +322,10 @@ export const appRouter = router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      // 改成下面這行，加一個 (ctx.res as any) 強制通過檢查
       (ctx.res as any).clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
- }),
+  }),
   upload: uploadRouter,
   videos: videosRouter,
   photos: photosRouter,
