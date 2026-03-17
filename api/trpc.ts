@@ -1,10 +1,16 @@
-import { createHTTPHandler } from "@trpc/server/adapters/node-http";
+import * as trpcExpress from "@trpc/server/adapters/express";
+import express from "express";
 import { appRouter } from "./routers.js";
 import { createContext } from "./context.js";
 
-const handler = createHTTPHandler({
-  router: appRouter,
-  createContext,
-});
+const app = express();
 
-export default handler;
+app.use(
+  "/api/trpc",
+  trpcExpress.createExpressMiddleware({
+    router: appRouter,
+    createContext,
+  })
+);
+
+export default app;
